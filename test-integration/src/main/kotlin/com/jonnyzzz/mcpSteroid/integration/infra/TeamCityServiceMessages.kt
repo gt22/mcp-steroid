@@ -78,6 +78,8 @@ object TeamCityServiceMessages {
             // Bundle = everything except video / screenshots. Drives the zip
             // with no duplicated video bytes.
             println("##teamcity[publishArtifacts '${escape("$pBase/bundle/** => $runName.zip")}']")
+            //Publish the patch separately, to easily get it for evaluation
+            println("##teamcity[publishArtifacts '${escape("$pBase/bundle/agent-result.patch")}']")
             return
         }
         // Local-dev fallback: publish the full, uncompressed run-dir.
@@ -90,6 +92,6 @@ object TeamCityServiceMessages {
         // zip stays a self-contained offline record of the whole session.
         println("##teamcity[publishArtifacts '${escape("$base/** => $runName.zip")}']")
         // Agent-produced patch, to be used for evaluation
-        println("##teamcity[publishArtifacts '${escape("$base/agent-result.patch => $runName.patch")}']")
+        println("##teamcity[publishArtifacts '${escape("$base/agent-result.patch")}']")
     }
 }
