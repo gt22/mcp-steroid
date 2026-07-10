@@ -1,6 +1,7 @@
 /* Copyright 2025-2026 Eugene Petrenko (mcp@jonnyzzz.com); Copyright 2025-2026 JetBrains. Use of this source code is governed by the Apache 2.0 license. */
 package com.jonnyzzz.mcpSteroid.integration.arena
 
+import com.jonnyzzz.mcpSteroid.integration.infra.TeamCityArtifactPostProcess
 import com.jonnyzzz.mcpSteroid.testHelper.AiAgentSession
 import com.jonnyzzz.mcpSteroid.testHelper.AiProcessResult
 import com.jonnyzzz.mcpSteroid.testHelper.process.ProcessResult
@@ -395,6 +396,7 @@ class ArenaTestRunner(
         val evaluation = evaluate(agentResult, projectDir)
         val diff = git.diff(projectDir)
         logDir?.resolve("agent-result.patch")?.writeText(diff)
+
 
         println("[ARENA] ========================================")
         println("[ARENA] Result for ${testCase.instanceId}:")

@@ -2,6 +2,10 @@
 package com.jonnyzzz.mcpSteroid.integration.infra
 
 import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.Path
+import kotlin.io.path.absolute
+import kotlin.io.path.div
 
 /**
  * Emits TeamCity service messages for integrating Docker-based IDE tests with the
@@ -80,6 +84,11 @@ object TeamCityServiceMessages {
             println("##teamcity[publishArtifacts '${escape("$pBase/bundle/** => $runName.zip")}']")
             //Publish the patch separately, to easily get it for evaluation
             println("##teamcity[publishArtifacts '${escape("$pBase/bundle/agent-result.patch")}']")
+            val outputDir = Path(System.getProperty("user.home")) / "steroid-output"
+            if (Files.exists(outputDir)) {
+                Files.delete(outputDir)
+            }
+            Files.createSymbolicLink(outputDir, (Path(pBase) / "bundle").absolute())
             return
         }
         // Local-dev fallback: publish the full, uncompressed run-dir.
