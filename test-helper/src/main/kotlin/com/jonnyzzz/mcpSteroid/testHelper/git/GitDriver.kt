@@ -170,11 +170,11 @@ class GitDriver(
      * @param repoDir guest path of the repository
      * @return the diff output as a string in unified diff format, suitable for applyPatch()
      */
-    fun diff(repoDir: String): String {
+    fun diff(repoDir: String, fromCommit: String = "HEAD"): String {
         println("[GIT] Generating diff for $repoDir...")
         val result = driver.startProcessInContainer {
             this
-                .args("git", "-C", repoDir, "diff")
+                .args("git", "-C", repoDir, "diff", fromCommit)
                 .timeoutSeconds(30)
                 .quietly()
                 .description("git diff in $repoDir")
