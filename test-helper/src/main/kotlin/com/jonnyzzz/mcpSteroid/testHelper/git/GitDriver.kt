@@ -171,7 +171,12 @@ class GitDriver(
      * @return the diff output as a string in unified diff format, suitable for applyPatch()
      */
     fun diff(repoDir: String, fromCommit: String = "HEAD"): String {
-        println("[GIT] Generating diff for $repoDir...")
+        driver.startProcessInContainer {
+            this
+                .args("git", "-C", repoDir, "add", "-AN")
+                .timeoutSeconds(30)
+                .description("git add -AN in $repoDir")
+        }.awaitForProcessFinish()
         val result = driver.startProcessInContainer {
             this
                 .args("git", "-C", repoDir, "diff", fromCommit)
@@ -179,7 +184,6 @@ class GitDriver(
                 .quietly()
                 .description("git diff in $repoDir")
         }.awaitForProcessFinish()
-
         result.assertExitCode(0, "git diff")
         return result.stdout
     }
