@@ -170,7 +170,7 @@ class GitDriver(
      * @param repoDir guest path of the repository
      * @return the diff output as a string in unified diff format, suitable for applyPatch()
      */
-    fun diff(repoDir: String, fromCommit: String = "HEAD"): String {
+    fun diff(repoDir: String, fromCommit: String = "HEAD", pathspec: Array<String> = emptyArray()): String {
         driver.startProcessInContainer {
             this
                 .args("git", "-C", repoDir, "add", "-AN")
@@ -179,7 +179,7 @@ class GitDriver(
         }.awaitForProcessFinish()
         val result = driver.startProcessInContainer {
             this
-                .args("git", "-C", repoDir, "diff", fromCommit)
+                .args("git", "-pC", repoDir, "diff", fromCommit, "--", ".", *pathspec)
                 .timeoutSeconds(30)
                 .quietly()
                 .description("git diff in $repoDir")

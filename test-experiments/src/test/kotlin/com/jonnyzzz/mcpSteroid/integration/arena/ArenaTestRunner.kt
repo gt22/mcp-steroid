@@ -394,7 +394,11 @@ class ArenaTestRunner(
 
         // Step 5: Evaluate
         val evaluation = evaluate(agentResult, projectDir)
-        val diff = git.diff(projectDir, testCase.baseCommit)
+        val diff = git.diff(
+            projectDir,
+            testCase.baseCommit,
+            arrayOf(":!package-lock.json")
+        )
         logDir?.resolve("agent-result.patch")?.writeText(diff)
 
 
