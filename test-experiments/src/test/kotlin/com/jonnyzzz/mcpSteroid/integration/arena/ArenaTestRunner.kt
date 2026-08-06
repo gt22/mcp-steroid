@@ -393,13 +393,16 @@ class ArenaTestRunner(
         val agentDurationMs = System.currentTimeMillis() - agentStartMs
 
         // Step 5: Evaluate
-        val evaluation = evaluate(agentResult, projectDir)
-        val diff = git.diff(
-            projectDir,
-            testCase.baseCommit,
-            arrayOf(":!package-lock.json")
-        )
-        logDir?.resolve("agent-result.patch")?.writeText(diff)
+        val evaluation = try {
+            evaluate(agentResult, projectDir)
+        } finally {
+            val diff = git.diff(
+                projectDir,
+                testCase.baseCommit,
+                arrayOf(":!package-lock.json")
+            )
+            logDir?.resolve("agent-result.patch")?.writeText(diff)
+        }
 
 
         println("[ARENA] ========================================")
