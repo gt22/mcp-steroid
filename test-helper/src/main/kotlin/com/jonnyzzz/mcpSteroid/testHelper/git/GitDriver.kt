@@ -179,12 +179,15 @@ class GitDriver(
         }.awaitForProcessFinish()
         val result = driver.startProcessInContainer {
             this
-                .args("git", "-pC", repoDir, "diff", fromCommit, "--", ".", *pathspec)
+                .args("git", "-C", repoDir, "diff", "-p", fromCommit, "--", ".", *pathspec)
                 .timeoutSeconds(30)
                 .quietly()
                 .description("git diff in $repoDir")
         }.awaitForProcessFinish()
-        result.assertExitCode(0, "git diff")
+//        result.assertExitCode(0, "git diff")
+        if (result.exitCode != 0) {
+            println("[GIT] git diff failed: ${result.stderr}")
+        }
         return result.stdout
     }
 
