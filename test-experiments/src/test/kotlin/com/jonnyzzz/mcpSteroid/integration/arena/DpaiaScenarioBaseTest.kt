@@ -144,7 +144,8 @@ abstract class DpaiaScenarioBaseTest {
                 withMcp = withMcp,
                 timeoutSeconds = caseConfig.agentTimeoutSeconds,
                 predeployedProjectDir = ideProjectDir,
-                logDir = session.runDirInContainer
+                logDir = session.runDirInContainer,
+                lifetime = lifetime
             )
 
             // ── Extract metrics from agent NDJSON ────────────────────────────────

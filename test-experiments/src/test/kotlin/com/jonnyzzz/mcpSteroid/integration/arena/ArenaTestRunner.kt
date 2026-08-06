@@ -4,6 +4,7 @@ package com.jonnyzzz.mcpSteroid.integration.arena
 import com.jonnyzzz.mcpSteroid.integration.infra.TeamCityArtifactPostProcess
 import com.jonnyzzz.mcpSteroid.testHelper.AiAgentSession
 import com.jonnyzzz.mcpSteroid.testHelper.AiProcessResult
+import com.jonnyzzz.mcpSteroid.testHelper.CloseableStack
 import com.jonnyzzz.mcpSteroid.testHelper.process.ProcessResult
 import com.jonnyzzz.mcpSteroid.testHelper.docker.ContainerDriver
 import com.jonnyzzz.mcpSteroid.testHelper.git.GitDriver
@@ -355,6 +356,7 @@ class ArenaTestRunner(
         prewarm: ((projectDir: String) -> Unit)? = null,
         predeployedProjectDir: String? = null,
         logDir: File? = null,
+        lifetime: CloseableStack? = null
     ): ArenaTestResult {
         println("[ARENA] ========================================")
         println("[ARENA] Running: ${testCase.instanceId}")
@@ -392,10 +394,7 @@ class ArenaTestRunner(
         val agentResult = agent.runPrompt(prompt, timeoutSeconds = timeoutSeconds).awaitForProcessFinish()
         val agentDurationMs = System.currentTimeMillis() - agentStartMs
 
-        // Step 5: Evaluate
-        val evaluation = try {
-            evaluate(agentResult, projectDir)
-        } finally {
+        lifetime?.registerCleanupAction {
             val diff = git.diff(
                 projectDir,
                 testCase.baseCommit,
@@ -403,6 +402,9 @@ class ArenaTestRunner(
             )
             logDir?.resolve("agent-result.patch")?.writeText(diff)
         }
+
+        // Step 5: Evaluate
+        val evaluation = evaluate(agentResult, projectDir)
 
 
         println("[ARENA] ========================================")
