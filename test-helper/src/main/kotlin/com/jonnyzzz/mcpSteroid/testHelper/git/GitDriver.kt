@@ -153,7 +153,7 @@ class GitDriver(
         println("[GIT] Applying patch to $repoDir...")
         // Ensure patch ends with a trailing newline — git apply requires it,
         // but some dataset entries omit the final newline causing "corrupt patch" errors.
-        val normalizedPatch = if (patchContent.endsWith("\n")) patchContent else patchContent + "\n"
+        val normalizedPatch = (if (patchContent.endsWith("\n")) patchContent else patchContent + "\n") + "\n"
         driver.writeFileInContainer(patchPath, normalizedPatch, executable = false)
 
         driver.startProcessInContainer {
