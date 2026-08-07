@@ -398,15 +398,6 @@ class ArenaTestRunner(
         val agentResult = agent.runPrompt(prompt, timeoutSeconds = timeoutSeconds).awaitForProcessFinish()
         val agentDurationMs = System.currentTimeMillis() - agentStartMs
 
-        lifetime?.registerCleanupAction {
-            val diff = git.diff(
-                projectDir,
-                testCase.baseCommit,
-                arrayOf(":!package-lock.json")
-            )
-            logDir?.resolve("agent-result.patch")?.writeText(diff)
-        }
-
         // Step 5: Evaluate
         val evaluation = evaluate(agentResult, projectDir)
 

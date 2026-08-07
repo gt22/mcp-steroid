@@ -12,6 +12,7 @@ import com.jonnyzzz.mcpSteroid.integration.infra.create
 import com.jonnyzzz.mcpSteroid.integration.infra.waitForProjectReady
 import com.jonnyzzz.mcpSteroid.testHelper.AiAgentSession
 import com.jonnyzzz.mcpSteroid.testHelper.CloseableStackHost
+import com.jonnyzzz.mcpSteroid.testHelper.git.GitDriver
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.AfterAll
@@ -126,6 +127,16 @@ abstract class DpaiaScenarioBaseTest {
                     "(open: ${openProjects.joinToString { "${it.name}@${it.path}" }}). Deploy/open regression (#251)."
             }
 
+            // backup patch creation
+            lifetime.registerCleanupAction {
+                val diff = GitDriver(session.scope).diff(
+                    ideProjectDir,
+                    testCase.baseCommit,
+                    arrayOf(":!package-lock.json")
+                )
+                session.runDirInContainer.resolve("agent-result.patch").writeText(diff)
+            }
+
             // ── Agent run (TIMED) ────────────────────────────────────────────────
             val agent: AiAgentSession = when (agentName) {
                 "claude" -> session.aiAgents.claude
@@ -137,17 +148,24 @@ abstract class DpaiaScenarioBaseTest {
                 container = session.scope,
                 projectGuestDir = ideProjectDir,
             )
-
-            val result = runner.runTest(
-                testCase = testCase,
-                agent = agent,
-                withMcp = withMcp,
-                timeoutSeconds = caseConfig.agentTimeoutSeconds,
-                predeployedProjectDir = ideProjectDir,
-                logDir = session.runDirInContainer,
-                lifetime = lifetime
-            )
-
+            val result = try {
+                runner.runTest(
+                    testCase = testCase,
+                    agent = agent,
+                    withMcp = withMcp,
+                    timeoutSeconds = caseConfig.agentTimeoutSeconds,
+                    predeployedProjectDir = ideProjectDir,
+                    logDir = session.runDirInContainer,
+                    lifetime = lifetime
+                )
+            } finally {
+                val diff = GitDriver(session.scope).diff(
+                    ideProjectDir,
+                    testCase.baseCommit,
+                    arrayOf(":!package-lock.json")
+                )
+                session.runDirInContainer.resolve("agent-result.patch").writeText(diff)
+            }
             // ── Extract metrics from agent NDJSON ────────────────────────────────
             val rawOutput = result.agentResult.stdout
             val tokens = extractTokenUsage(rawOutput)
