@@ -328,7 +328,7 @@ sealed class IntelliJProject{
 
             git.checkout(guestProjectDir, baseCommit)
 
-            if (testPatch.isNotBlank()) {
+            if (testPatch.isNotBlank() && System.getProperty("arena.test.eval_type", "informed") == "informed") {
                 console.writeInfo("Applying test patch for $displayName ...")
                 git.applyPatch(guestProjectDir, testPatch)
             }

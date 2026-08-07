@@ -66,6 +66,10 @@ class ArenaTestRunner(
             println("[ARENA] No test patch to apply for ${testCase.instanceId}")
             return
         }
+        if (System.getProperty("arena.test.eval_type", "informed") != "informed") {
+            println("[ARENA] Skipping test patch application for a uniformed run")
+            return
+        }
         println("[ARENA] Applying test patch for ${testCase.instanceId} ...")
         git.applyPatch(projectDir, testCase.testPatch)
     }
