@@ -128,14 +128,14 @@ abstract class DpaiaScenarioBaseTest {
             }
 
             // backup patch creation
-            lifetime.registerCleanupAction {
-                val diff = GitDriver(session.scope).diff(
-                    ideProjectDir,
-                    testCase.baseCommit,
-                    arrayOf(":!package-lock.json")
-                )
-                session.runDirInContainer.resolve("agent-result.patch").writeText(diff)
-            }
+//            lifetime.registerCleanupAction {
+//                val diff = GitDriver(session.scope).diff(
+//                    ideProjectDir,
+//                    testCase.baseCommit,
+//                    arrayOf(":!package-lock.json")
+//                )
+//                session.runDirInContainer.resolve("agent-result.patch").writeText(diff)
+//            }
 
             // ── Agent run (TIMED) ────────────────────────────────────────────────
             val agent: AiAgentSession = when (agentName) {
@@ -148,6 +148,10 @@ abstract class DpaiaScenarioBaseTest {
                 container = session.scope,
                 projectGuestDir = ideProjectDir,
             )
+
+            // Mark the agent starting, disabling dummy patch creation in #publishRunDirArtifact
+            session.runDirInContainer.resolve("agent-start-marker").writeText("started")
+
             val result = try {
                 runner.runTest(
                     testCase = testCase,

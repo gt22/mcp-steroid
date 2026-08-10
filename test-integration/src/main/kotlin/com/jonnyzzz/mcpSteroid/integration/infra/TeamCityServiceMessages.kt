@@ -83,6 +83,18 @@ object TeamCityServiceMessages {
             // with no duplicated video bytes.
             println("##teamcity[publishArtifacts '${escape("$pBase/bundle/** => $runName.zip")}']")
             //Publish the patch separately, to easily get it for evaluation
+            if(!runDir.resolve("agent-start-marker").exists()) {
+                //Agent never started, mark task as failed, produce a dummy patch
+                runDir.resolve("agent-result.patch").writeText(
+                    "diff --git a/agent-never-started.txt b/agent-never-started.txt\n" +
+                    "new file mode 100644\n" +
+                    "index 0000000..2b5a492\n" +
+                    "--- /dev/null\n" +
+                    "+++ b/agent-never-started.txt\n" +
+                    "@@ -0,0 +1 @@\n" +
+                    "+Pipeline never started the agent, likely an error in environment setup."
+                )
+            }
             println("##teamcity[publishArtifacts '${escape("$pBase/bundle/agent-result.patch")}']")
             val outputDir = Path(System.getProperty("user.home")) / "steroid-output"
             if (Files.exists(outputDir)) {
