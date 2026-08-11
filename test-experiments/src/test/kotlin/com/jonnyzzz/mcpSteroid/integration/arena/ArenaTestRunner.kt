@@ -119,37 +119,39 @@ class ArenaTestRunner(
         appendLine(testCase.problemStatement)
         appendLine()
 
-        if (testCase.failToPass.isNotEmpty()) {
-            appendLine("### FAIL_TO_PASS")
-            for (test in testCase.failToPass) {
-                appendLine("- `$test`")
+        if (System.getProperty("arena.test.eval_type", "informed") == "informed") {
+            if (testCase.failToPass.isNotEmpty()) {
+                appendLine("### FAIL_TO_PASS")
+                for (test in testCase.failToPass) {
+                    appendLine("- `$test`")
+                }
+                appendLine()
             }
-            appendLine()
-        }
 
-        // Include the test patch so the agent immediately sees what changed
-        // without needing a VCS check or file read on the first turn.
-        if (testCase.testPatch.isNotBlank()) {
-            appendLine("### Test Patch (already applied — these tests define expected behavior)")
-            appendLine("```diff")
-            // Truncate very large patches to avoid blowing up the prompt
-            val patchLines = testCase.testPatch.lines()
-            if (patchLines.size <= 200) {
-                appendLine(testCase.testPatch)
-            } else {
-                appendLine(patchLines.take(200).joinToString("\n"))
-                appendLine("... (${patchLines.size - 200} more lines truncated)")
+            // Include the test patch so the agent immediately sees what changed
+            // without needing a VCS check or file read on the first turn.
+            if (testCase.testPatch.isNotBlank()) {
+                appendLine("### Test Patch (already applied — these tests define expected behavior)")
+                appendLine("```diff")
+                // Truncate very large patches to avoid blowing up the prompt
+                val patchLines = testCase.testPatch.lines()
+                if (patchLines.size <= 200) {
+                    appendLine(testCase.testPatch)
+                } else {
+                    appendLine(patchLines.take(200).joinToString("\n"))
+                    appendLine("... (${patchLines.size - 200} more lines truncated)")
+                }
+                appendLine("```")
+                appendLine()
             }
-            appendLine("```")
-            appendLine()
-        }
 
-        if (testCase.passToPass.isNotEmpty()) {
-            appendLine("### PASS_TO_PASS")
-            for (test in testCase.passToPass) {
-                appendLine("- `$test`")
+            if (testCase.passToPass.isNotEmpty()) {
+                appendLine("### PASS_TO_PASS")
+                for (test in testCase.passToPass) {
+                    appendLine("- `$test`")
+                }
+                appendLine()
             }
-            appendLine()
         }
 
         appendLine("## Environment Facts")
