@@ -85,7 +85,7 @@ object TeamCityServiceMessages {
             //Publish the patch separately, to easily get it for evaluation
             if(!runDir.resolve("agent-start-marker").exists()) {
                 //Agent never started, mark task as failed, produce a dummy patch
-                runDir.resolve("agent-result.patch").writeText(
+                publishDir.resolve("bundle").resolve("agent-result.patch").writeText(
                     "diff --git a/agent-never-started.txt b/agent-never-started.txt\n" +
                     "new file mode 100644\n" +
                     "index 0000000..2b5a492\n" +
