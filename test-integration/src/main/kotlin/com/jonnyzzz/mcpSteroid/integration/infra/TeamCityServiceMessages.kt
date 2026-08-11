@@ -5,7 +5,9 @@ import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
+import kotlin.io.path.writeText
 
 /**
  * Emits TeamCity service messages for integrating Docker-based IDE tests with the
@@ -83,9 +85,13 @@ object TeamCityServiceMessages {
             // with no duplicated video bytes.
             println("##teamcity[publishArtifacts '${escape("$pBase/bundle/** => $runName.zip")}']")
             //Publish the patch separately, to easily get it for evaluation
+            val outputDir = Path(System.getProperty("user.home")) / "steroid-output"
+            if (Files.exists(outputDir)) {
+                Files.delete(outputDir)
+            }
             if(!runDir.resolve("agent-start-marker").exists()) {
                 //Agent never started, mark task as failed, produce a dummy patch
-                publishDir.resolve("bundle").resolve("agent-result.patch").writeText(
+                val dummyPatch =
                     "diff --git a/agent-never-started.txt b/agent-never-started.txt\n" +
                     "new file mode 100644\n" +
                     "index 0000000..2b5a492\n" +
@@ -93,14 +99,13 @@ object TeamCityServiceMessages {
                     "+++ b/agent-never-started.txt\n" +
                     "@@ -0,0 +1 @@\n" +
                     "+Pipeline never started the agent, likely an error in environment setup."
-                )
+                outputDir.createDirectories()
+                (outputDir / "agent-result.patch").writeText(dummyPatch)
+
+            } else {
+                Files.createSymbolicLink(outputDir, (Path(pBase) / "bundle").absolute())
             }
-            println("##teamcity[publishArtifacts '${escape("$pBase/bundle/agent-result.patch")}']")
-            val outputDir = Path(System.getProperty("user.home")) / "steroid-output"
-            if (Files.exists(outputDir)) {
-                Files.delete(outputDir)
-            }
-            Files.createSymbolicLink(outputDir, (Path(pBase) / "bundle").absolute())
+            println("##teamcity[publishArtifacts '${escape("$outputDir/agent-result.patch")}']")
             return
         }
         // Local-dev fallback: publish the full, uncompressed run-dir.
